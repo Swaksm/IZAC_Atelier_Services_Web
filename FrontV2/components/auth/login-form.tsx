@@ -24,7 +24,7 @@ export function LoginForm() {
     setSuccess("")
 
     try {
-      const response = await apiFetch("http://localhost:8004/login", {
+      const response = await apiFetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

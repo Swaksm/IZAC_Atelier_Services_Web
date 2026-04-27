@@ -42,7 +42,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     }
     setIsLoading(true)
     try {
-      const response = await apiFetch("http://localhost:8003/users", {
+      const response = await apiFetch("http://localhost:8000/meal/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nom, prenom, email, password, sexe }),

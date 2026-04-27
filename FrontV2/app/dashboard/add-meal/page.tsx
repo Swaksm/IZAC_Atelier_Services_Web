@@ -44,7 +44,7 @@ function AddAnalyzedMealForm({
         quantite_g: item.grams,
         calories_100g: item.kcal && item.grams ? Math.round((item.kcal / item.grams) * 100) : 0,
       }));
-      const res = await apiFetch(`http://localhost:8003/users/${userId}/meals`, {
+      const res = await apiFetch(`http://localhost:8000/meal/users/${userId}/meals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type_repas: typeRepas, date_repas: dateRepas, notes, items }),
@@ -207,8 +207,24 @@ export default function AddMealPage() {
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const abonnement = localStorage.getItem("user_abonnement");
-    setIsPremium(abonnement === "premium" || abonnement === "premium_plus");
+    const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      setIsPremium(false);
+      return;
+    }
+
+    // Refresh subscription status from API
+    apiFetch(`http://localhost:8000/auth/users/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        const sub = data.abonnement || "freemium";
+        localStorage.setItem("user_abonnement", sub);
+        setIsPremium(sub === "premium" || sub === "premium_plus");
+      })
+      .catch(() => {
+        const localSub = localStorage.getItem("user_abonnement");
+        setIsPremium(localSub === "premium" || localSub === "premium_plus");
+      });
   }, []);
 
   async function handleAnalyze(e: React.FormEvent) {
@@ -222,7 +238,7 @@ export default function AddMealPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_KCAL_TOKEN}`,
+          Authorization: `Bearer clesecrete`,
         },
         body: JSON.stringify({ text }),
       });

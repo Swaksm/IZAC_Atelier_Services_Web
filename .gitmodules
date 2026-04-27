@@ -1,3 +1,6 @@
 [submodule "Back"]
 	path = Back
 	url = https://github.com/Swaksm/MSPR-backend
+[submodule "Front"]
+	path = Front
+	url = https://github.com/Swaksm/MSPR-Frontend

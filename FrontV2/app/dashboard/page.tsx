@@ -60,7 +60,7 @@ export default function Dashboard() {
   const { t, lang } = useTranslation();
   const [mounted, setMounted] = useState(false);
   const [userName, setUserName] = useState("Jarmy");
-  const [abonnement, setAbonnement] = useState("freemium");
+  const [abonnement, setAbonnement] = useState("");
   const [meals, setMeals] = useState<MealResponse[]>([]);
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,11 +73,21 @@ export default function Dashboard() {
       return;
     }
     setUserName(localStorage.getItem("user_name") || "Jarmy");
-    setAbonnement(localStorage.getItem("user_abonnement") || "freemium");
+    
+    // Fetch latest user data to get real-time subscription status
+    apiFetch(`http://localhost:8000/auth/users/${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.abonnement) {
+          setAbonnement(data.abonnement);
+          localStorage.setItem("user_abonnement", data.abonnement);
+        }
+      })
+      .catch(err => console.error("Error fetching latest subscription", err));
 
     Promise.all([
-      apiFetch(`http://localhost:8003/users/${userId}/meals`).then((r) => r.json()),
-      apiFetch(`http://localhost:8003/users/${userId}/objectives`).then((r) => r.json()),
+      apiFetch(`http://localhost:8000/meal/users/${userId}/meals`).then((r) => r.json()),
+      apiFetch(`http://localhost:8000/meal/users/${userId}/objectives`).then((r) => r.json()),
     ])
       .then(([mealsData, objData]) => {
         setMeals(Array.isArray(mealsData) ? mealsData : []);
@@ -160,7 +170,7 @@ export default function Dashboard() {
             </div>
             <Zap className="absolute -bottom-4 -right-4 w-32 h-32 opacity-10 rotate-12" />
           </div>
-        ) : (
+        ) : abonnement ? (
           <div className="p-4 bg-card border border-primary/20 rounded-3xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-primary/10">
@@ -179,7 +189,7 @@ export default function Dashboard() {
               <Button variant="ghost" size="sm" className="text-xs text-primary font-bold">{t("manage")}</Button>
             </Link>
           </div>
-        )}
+        ) : null}
 
         {/* Résumé Calories */}
         <div className="p-6 bg-card border border-border rounded-3xl space-y-5">
