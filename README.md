@@ -1,12 +1,14 @@
-installation
 
---recursive
-
-Shell git clone https://github.com/Swaksm/IZAC_Atelier_Services_Web
-
-Shell git clone https://github.com/Swaksm/MSPR-backend Back
-
-Shell git clone https://github.com/Swaksm/MSPR-Frontend Front
+### Installation
+1.  Cloner le projet et les sous-modules :
+    ```bash
+    git clone --recursive https://github.com/Swaksm/IZAC_Atelier_Services_Web.git
+    cd IZAC_Atelier_Services_Web
+    ```
+2.  Lancer l'ensemble des services :
+    ```bash
+    docker-compose up --build
+    `
 
 ---------- terminal 1
 cd \Front\
@@ -53,17 +55,7 @@ Nous utilisons une approche agile simplifiée :
 ### Prérequis
 *   Docker & Docker Compose
 *   Git
-
-### Installation
-1.  Cloner le projet et les sous-modules :
-    ```bash
-    git clone --recursive https://github.com/Swaksm/IZAC_Atelier_Services_Web.git
-    cd IZAC_Atelier_Services_Web
-    ```
-2.  Lancer l'ensemble des services :
-    ```bash
-    docker-compose up --build
-    ```
+``
 
 ### Configuration (Variables d'environnement)
 Les fichiers `.env` sont nécessaires pour chaque microservice (Auth, Meal, Kcal).
