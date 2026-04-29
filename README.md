@@ -2,16 +2,16 @@ installation
 
 Shell git clone https://github.com/Swaksm/IZAC_Atelier_Services_Web
 
-Shell git clone https://github.com/Swaksm/MSPR-backend back
+Shell git clone https://github.com/Swaksm/MSPR-backend Back
 
-Shell git clone https://github.com/Swaksm/MSPR-Frontend front
+Shell git clone https://github.com/Swaksm/MSPR-Frontend Front
 
 ---------- terminal 1
-cd \front\
+cd \Front\
 docker-compose up --build
 
 ---------- terminal 2
-cd \back\
+cd \Back\
 docker-compose up --build
 
 # MSPR - Application d'analyse nutritionnelle (JARMY)
