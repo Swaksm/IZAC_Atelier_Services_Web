@@ -45,7 +45,7 @@ Nous utilisons une approche agile simplifiée :
 ## 💻 Lancement du projet en local
 
 ### Prérequis
-*   Docker & Docker Compose
+*   Docker
 *   Git
 ``
 
