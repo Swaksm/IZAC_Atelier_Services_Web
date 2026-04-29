@@ -1,3 +1,15 @@
+installation
+Shell git clone https://github.com/Swaksm/MSPR-backend back
+Shell git clone https://github.com/Swaksm/MSPR-Frontend front
+
+---------- terminal 1
+cd \front\
+docker-compose up --build
+
+---------- terminal 2
+cd \back\
+docker-compose up --build
+
 # MSPR - Application d'analyse nutritionnelle (JARMY)
 
 Ce dépôt est le point d'entrée global de l'application **JARMY**, regroupant les services Backend et Frontend.
