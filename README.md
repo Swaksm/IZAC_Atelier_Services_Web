@@ -5,18 +5,10 @@
     git clone --recursive https://github.com/Swaksm/IZAC_Atelier_Services_Web.git
     cd IZAC_Atelier_Services_Web
     ```
-2.  Lancer l'ensemble des services :
+2.  Lancer chaque service  :
     ```bash
     docker-compose up --build
     `
-
----------- terminal 1
-cd \Front\
-docker-compose up --build
-
----------- terminal 2
-cd \Back\
-docker-compose up --build
 
 # MSPR - Application d'analyse nutritionnelle (JARMY)
 
