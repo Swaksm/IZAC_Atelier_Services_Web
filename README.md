@@ -1,5 +1,7 @@
 installation
 
+Shell git clone https://github.com/Swaksm/IZAC_Atelier_Services_Web
+
 Shell git clone https://github.com/Swaksm/MSPR-backend back
 
 Shell git clone https://github.com/Swaksm/MSPR-Frontend front
