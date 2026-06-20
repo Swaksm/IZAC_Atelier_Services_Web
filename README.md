@@ -134,4 +134,48 @@ IZAC_Atelier_Services_Web/
 
 ## URL de production
 
-*(Non disponible pour le moment)*
+| Service | URL |
+|---|---|
+| Frontend (Vercel) | https://mspr-frontend-xi.vercel.app |
+| Backend Gateway (Railway) | *(en cours de déploiement)* |
+
+---
+
+## Déploiement en production
+
+### Frontend — Vercel
+
+Le frontend est déployé automatiquement sur **Vercel** à chaque push sur `main` du repo `MSPR-Frontend`.
+
+- Build : Next.js détecté automatiquement
+- Variables d'environnement à configurer dans Vercel → Settings → Environment Variables :
+  ```
+  NEXT_PUBLIC_GOOGLE_CLIENT_ID=<Google OAuth Client ID>
+  NEXT_PUBLIC_JARMY_API_URL=<URL publique du gateway Railway>
+  ```
+- Le SSO Google OAuth nécessite d'ajouter l'URL Vercel dans les **Authorized JavaScript origins** sur [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth 2.0 Client ID
+
+### Backend — Railway
+
+Le backend (microservices Python/FastAPI) est déployé sur **Railway** avec un service par microservice.
+
+**Services déployés :**
+
+| Service Railway | Rôle | Port |
+|---|---|---|
+| gateway | Point d'entrée API public | 8000 |
+| auth | Authentification + SSO Google | 8004 |
+| meal | Journal alimentaire | 8003 |
+| admin | Administration | 8006 |
+| activity-logs | Logs MongoDB | 8005 |
+| PostgreSQL | Base de données relationnelle | 5432 |
+| MongoDB | Base de données logs NoSQL | 27017 |
+
+**Variables d'environnement Railway à configurer par service :**
+
+- **auth, meal, admin** : `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (depuis le plugin PostgreSQL Railway)
+- **activity-logs** : `MONGO_URL` (depuis le plugin MongoDB Railway), `MONGO_DB=healthai_logs`
+- **gateway** : URLs internes des services via `*.railway.internal`
+- **auth** : `GOOGLE_CLIENT_ID`
+
+Les services communiquent entre eux via le réseau privé Railway (`http://<service>.railway.internal:<port>`).
