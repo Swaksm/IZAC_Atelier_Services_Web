@@ -18,15 +18,26 @@ Dépôt principal du projet **JARMY**, regroupant le Frontend (Next.js) et le Ba
 
 JARMY est une application d'analyse nutritionnelle permettant aux utilisateurs de suivre leurs repas, d'obtenir des estimations caloriques par langage naturel et de visualiser leur activité.
 
-### Service web externe — SSO Google OAuth (Matthieu)
+---
+
+## 1. Service web externe — SSO Google OAuth (Matthieu)
 
 L'authentification est déléguée à **Google OAuth 2.0**, un service web externe géré par Google.
 
-**Pourquoi ?** Plutôt que de gérer mots de passe et sessions nous-mêmes, on s'appuie sur l'infrastructure d'identité de Google. L'utilisateur clique "Se connecter avec Google", Google vérifie l'identité et nous renvoie un **ID Token JWT** signé. Le service `auth` vérifie ce token côté backend via la librairie `google-auth`, puis crée ou retrouve le compte utilisateur en base.
+**Pourquoi ?** Plutôt que de gérer mots de passe et sessions nous-mêmes, on s'appuie sur l'infrastructure d'identité de Google. L'utilisateur clique "Se connecter avec Google", Google vérifie l'identité et nous renvoie un **ID Token JWT** signé. Le service `auth` vérifie ce token côté backend via la librairie `google-auth`, puis crée ou retrouve le compte utilisateur en base PostgreSQL.
 
-**Côté Frontend** (`@react-oauth/google`) : le composant Google renvoie un `credential` (JWT). On l'envoie à `POST /auth/google-login`. Le backend valide le token avec `id_token.verify_oauth2_token()`, extrait l'email/nom/prénom, et crée le compte si besoin. Aucun mot de passe ne transite.
+**Flux complet :**
+1. Le Frontend (`@react-oauth/google`) affiche le bouton Google et obtient un `credential` (JWT signé par Google)
+2. Ce token est envoyé à `POST /auth/google-login` sur le backend
+3. Le backend valide le token avec `id_token.verify_oauth2_token()` (appel vers les serveurs Google)
+4. L'email, prénom et nom sont extraits du JWT — aucun mot de passe ne transite jamais
+5. L'utilisateur est créé ou retrouvé en base, et une session est ouverte côté Frontend
 
-### Base de données NoSQL — MongoDB (Youssef)
+**Configuration requise :** `NEXT_PUBLIC_GOOGLE_CLIENT_ID` (Frontend) et `GOOGLE_CLIENT_ID` (service auth). L'URL de production doit être déclarée dans Google Cloud Console → Authorized JavaScript origins.
+
+---
+
+## 2. Base de données NoSQL — MongoDB (Youssef)
 
 En plus de PostgreSQL (données structurées : utilisateurs, repas, aliments), on utilise **MongoDB** pour les logs d'activité utilisateur.
 
@@ -36,27 +47,71 @@ En plus de PostgreSQL (données structurées : utilisateurs, repas, aliments), o
 
 Imposer un schéma SQL fixe pour ces données hétérogènes serait contraignant et peu adapté à l'évolution. MongoDB permet de stocker chaque log comme un document JSON indépendant, sans migration de schéma. C'est le cas d'usage typique du NoSQL : **données semi-structurées à fort volume, en écriture rapide (fire-and-forget)**.
 
-**Fonctionnement concret :** quand un utilisateur se connecte ou ajoute un repas, les services `auth` et `meal` envoient de manière asynchrone (thread daemon, sans bloquer la réponse) un document à `activity-logs` (port 8005), qui l'insère dans la collection `activity_logs` de la base `healthai_logs`. Ces logs sont consultables dans la page admin (onglet **Activité MongoDB**) en temps réel.
+**Fonctionnement concret :** quand un utilisateur se connecte ou ajoute un repas, les services `auth` et `meal` envoient de manière asynchrone (thread daemon, sans bloquer la réponse) un document à `activity-logs`, qui l'insère dans la collection `activity_logs` de la base `healthai_logs`. Ces logs sont consultables dans la page admin (onglet **Activité MongoDB**) en temps réel.
+
+**Configuration requise :** `MONGO_URL` (URI MongoDB Atlas ou local) et `MONGO_DB=healthai_logs` sur le service `activity-logs`.
 
 ---
 
-## Organisation du groupe
+## 3. Mise en production (Anass)
 
-Chaque membre est responsable d'une brique fonctionnelle de bout en bout :
+L'application est déployée gratuitement sur **Vercel** (Frontend) et **Railway** (Backend).
 
-- **Matthieu** — Frontend Next.js et intégration SSO Google OAuth
-- **Youssef** — MongoDB, pipeline ETL et service NLP d'analyse calorique (SpaCy)
-- **Anass** — Architecture Gateway, coordination des microservices et déploiement
+### URL de production
 
-Communication via **Discord/Teams**, versioning sur **GitHub**.
+| Service | URL |
+|---|---|
+| Frontend (Vercel) | https://mspr-frontend-xi.vercel.app |
+| Backend Gateway (Railway) | https://mspr-backend-production.up.railway.app |
 
----
+### Frontend — Vercel
 
-## Étapes de mise en œuvre
+Déploiement automatique à chaque push sur `main` du repo `MSPR-Frontend`.
 
-1. **SSO** — Intégration Google OAuth 2.0 (Frontend `@react-oauth/google` + backend `google-auth`)
-2. **NoSQL** — MongoDB + service `activity-logs` + pipeline ETL pour l'enrichissement nutritionnel
-3. **Production** — Conteneurisation Docker Compose et déploiement
+Variables d'environnement à configurer dans Vercel → Settings → Environment Variables :
+
+```
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<Google OAuth Client ID>
+NEXT_PUBLIC_JARMY_API_URL=https://mspr-backend-production.up.railway.app
+```
+
+### Backend — Railway
+
+5 services déployés sur Railway :
+
+| Service Railway | Rôle | Port interne |
+|---|---|---|
+| gateway | Point d'entrée API public | 8000 |
+| auth | Authentification + SSO Google | 8004 |
+| log | Logs d'activité MongoDB | 8005 |
+| PostgreSQL | Base de données relationnelle | 5432 |
+| MongoDB | Base de données logs NoSQL | 27017 |
+
+Les services communiquent entre eux via le réseau privé Railway (`http://<service>.railway.internal:<port>`).
+
+**Variables d'environnement par service :**
+
+`gateway` :
+```
+AUTH_SERVICE_URL=http://auth.railway.internal:8004
+LOGS_SERVICE_URL=http://log.railway.internal:8005
+```
+
+`auth` :
+```
+DB_HOST=<PGHOST Railway>
+DB_PORT=5432
+DB_NAME=<PGDATABASE Railway>
+DB_USER=<PGUSER Railway>
+DB_PASSWORD=<PGPASSWORD Railway>
+GOOGLE_CLIENT_ID=<Google OAuth Client ID>
+```
+
+`log` (activity-logs) :
+```
+MONGO_URL=<URI MongoDB Atlas ou Railway>
+MONGO_DB=healthai_logs
+```
 
 ---
 
@@ -129,53 +184,3 @@ IZAC_Atelier_Services_Web/
 ```
 
 **Stack :** Next.js 16, React 19, shadcn/ui — FastAPI (Python) — PostgreSQL + MongoDB — SpaCy — Docker Compose
-
----
-
-## URL de production
-
-| Service | URL |
-|---|---|
-| Frontend (Vercel) | https://mspr-frontend-xi.vercel.app |
-| Backend Gateway (Railway) | https://mspr-backend-production.up.railway.app |
-
----
-
-## Déploiement en production
-
-### Frontend — Vercel
-
-Le frontend est déployé automatiquement sur **Vercel** à chaque push sur `main` du repo `MSPR-Frontend`.
-
-- Build : Next.js détecté automatiquement
-- Variables d'environnement à configurer dans Vercel → Settings → Environment Variables :
-  ```
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID=<Google OAuth Client ID>
-  NEXT_PUBLIC_JARMY_API_URL=<URL publique du gateway Railway>
-  ```
-- Le SSO Google OAuth nécessite d'ajouter l'URL Vercel dans les **Authorized JavaScript origins** sur [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials → OAuth 2.0 Client ID
-
-### Backend — Railway
-
-Le backend (microservices Python/FastAPI) est déployé sur **Railway** avec un service par microservice.
-
-**Services déployés :**
-
-| Service Railway | Rôle | Port |
-|---|---|---|
-| gateway | Point d'entrée API public | 8000 |
-| auth | Authentification + SSO Google | 8004 |
-| meal | Journal alimentaire | 8003 |
-| admin | Administration | 8006 |
-| activity-logs | Logs MongoDB | 8005 |
-| PostgreSQL | Base de données relationnelle | 5432 |
-| MongoDB | Base de données logs NoSQL | 27017 |
-
-**Variables d'environnement Railway à configurer par service :**
-
-- **auth, meal, admin** : `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` (depuis le plugin PostgreSQL Railway)
-- **activity-logs** : `MONGO_URL` (depuis le plugin MongoDB Railway), `MONGO_DB=healthai_logs`
-- **gateway** : URLs internes des services via `*.railway.internal`
-- **auth** : `GOOGLE_CLIENT_ID`
-
-Les services communiquent entre eux via le réseau privé Railway (`http://<service>.railway.internal:<port>`).
