@@ -101,7 +101,19 @@ Application accessible sur : **http://localhost:3000**
 
 ### Variables d'environnement
 
-Les fichiers `.env` nécessaires pour les services (Auth, Meal, Kcal) contiennent des clés JWT et credentials de base de données. Ils vous ont été transmis à l'adresse **daniel.vermonden@gmail.com**.
+Des fichiers `.env.example` sont fournis dans `Front/` et `Back/` pour lister toutes les variables nécessaires.
+
+**Frontend** — copier et remplir :
+```bash
+cp Front/.env.example Front/.env.local
+```
+
+**Backend** — copier et remplir :
+```bash
+cp Back/.env.example Back/.env
+```
+
+> Les valeurs sensibles (Client ID Google OAuth, credentials BDD) ont été transmises par mail à **daniel.vermonden@gmail.com**. Remplacer les champs `REMPLACER_PAR_LA_VALEUR_ENVOYEE_PAR_MAIL` par les valeurs reçues.
 
 ---
 
