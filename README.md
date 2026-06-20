@@ -137,7 +137,7 @@ IZAC_Atelier_Services_Web/
 | Service | URL |
 |---|---|
 | Frontend (Vercel) | https://mspr-frontend-xi.vercel.app |
-| Backend Gateway (Railway) | *(en cours de déploiement)* |
+| Backend Gateway (Railway) | https://mspr-backend-production.up.railway.app |
 
 ---
 
