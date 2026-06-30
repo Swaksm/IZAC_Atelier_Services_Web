@@ -20,7 +20,7 @@ JARMY est une application d'analyse nutritionnelle permettant aux utilisateurs d
 
 ---
 
-## 1. Service web externe — SSO Google OAuth (Matthieu)
+## 1. Service web externe — SSO Google OAuth (Anass)
 
 L'authentification est déléguée à **Google OAuth 2.0**, un service web externe géré par Google.
 
@@ -53,7 +53,7 @@ Imposer un schéma SQL fixe pour ces données hétérogènes serait contraignant
 
 ---
 
-## 3. Mise en production (Anass)
+## 3. Mise en production (Matthieu)
 
 L'application est déployée gratuitement sur **Vercel** (Frontend) et **Railway** (Backend).
 
