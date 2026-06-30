@@ -8,8 +8,8 @@ Dépôt principal du projet **JARMY**, regroupant le Frontend (Next.js) et le Ba
 
 | Membre | Rôle |
 |---|---|
-| Matthieu IZAC | Frontend & service web externe (SSO Google OAuth) |
-| Anass KABOURI | Architecture microservices, Gateway & mise en production |
+| Anass KABOURI | Frontend & service web externe (SSO Google OAuth) |
+| Matthieu IZAC | Architecture microservices, Gateway & mise en production |
 | Youssef BELATAR | Base de données NoSQL (MongoDB), ETL & service IA (Kcal) |
 
 ---
